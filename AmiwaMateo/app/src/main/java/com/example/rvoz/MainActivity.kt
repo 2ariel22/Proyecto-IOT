@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentState(onComplete: (() -> Unit)? = null) {
-        val url = "http://192.168.40.113:8080/components/getState"
+        val url = "http://64.23.154.127:8080/components/getState"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -186,7 +186,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun makeHttpRequest(ledState: Boolean, motorState: Boolean) {
-        val url = "http://192.168.40.113:8080/components/addComponent"
+        val url = "http://64.23.154.127:8080/components/addComponent"
         val JSON = "application/json; charset=utf-8".toMediaType()
         val payload = """
             {
@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logoutFromServer() {
-        val url = "http://192.168.40.113:8080/login/logout"
+        val url = "http://64.23.154.127:8080/login/logout"
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

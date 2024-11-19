@@ -9,7 +9,7 @@
 // Configuración de WiFi
 const char* ssid = "Pension63";
 const char* password = "LaPension2024.";
-const String serverIP = "http://192.168.40.113:8080";
+const String serverIP = "http://64.23.154.127:8080";
 const String endpointEstado = serverIP + "/login/isAuthenticated";
 const String endpointUsuario = serverIP + "/login/getLoggedUser";
 const String endpointGetState = serverIP + "/components/getState";
@@ -22,7 +22,7 @@ Stepper motor(stepsPerRevolution, 16, 17, 18, 19);  // Orden corregido de pines
 const int motorSpeed = 10;  // Velocidad en RPM, ajustada para mejor rendimiento
 
 // LCD y otros componentes permanecen igual
-LiquidCrystal_I2C lcd(0x27, 16, 4);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Configuración del teclado matricial
 const uint8_t ROWS = 4;
@@ -197,7 +197,6 @@ void actualizarPantalla() {
   }
 }
 
-// Mostrar mensaje de sesión cerrada
 void mostrarMensajeSesionCerrada() {
   lcd.clear();
   lcd.setCursor(0, 0);
