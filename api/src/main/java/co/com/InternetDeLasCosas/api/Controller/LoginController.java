@@ -48,6 +48,7 @@ public class LoginController {
     public ResponseEntity<String> getLoggedUser() {
         if (currentLoggedInUser != null) {
             return ResponseEntity.ok(currentLoggedInUser);
+
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user logged in");
         }
@@ -66,8 +67,14 @@ public class LoginController {
 
     // Verificar si un usuario está autenticado
     @GetMapping("/isAuthenticated")
-    public ResponseEntity<Boolean> isAuthenticated() {
-        return ResponseEntity.ok(currentLoggedInUser != null);
+    public ResponseEntity isAuthenticated() {
+        if(currentLoggedInUser != null){
+            return ResponseEntity.ok(true);
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 
 

@@ -27,9 +27,7 @@ public class ComponentsController {
     @PostMapping("/addComponent")
     public ResponseEntity<?> addComponent(@RequestBody DatesRegisterComponents datesRegisterComponents) {
         // Verificar si el usuario está autenticado
-        if (!isUserAuthenticated()) {
-            return ResponseEntity.status(401).body("User not authenticated");
-        }
+
         Components component = componentsRepository.save(new Components(datesRegisterComponents));
         return ResponseEntity.ok(component);
     }
@@ -37,19 +35,15 @@ public class ComponentsController {
     @GetMapping("/getAllComponents")
     public ResponseEntity<?> getAllComponents() {
         // Verificar si el usuario está autenticado
-        if (!isUserAuthenticated()) {
-            return ResponseEntity.status(401).body("User not authenticated");
-        }
+
         List<Components> componentsList = componentsRepository.findAll();
         return ResponseEntity.ok(componentsList);
     }
 
     @GetMapping("/getState")
     public ResponseEntity<?> getLastComponent() {
-        // Verificar si el usuario está autenticado
-        if (!isUserAuthenticated()) {
-            return ResponseEntity.status(401).body("User not authenticated");
-        }
+
+
         Components component = componentsRepository.findTopByOrderByFechaDesc().orElse(null);
         return ResponseEntity.ok(component);
     }

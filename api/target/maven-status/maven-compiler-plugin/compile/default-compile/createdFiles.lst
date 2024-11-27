@@ -1,10 +1,10 @@
 co\com\InternetDeLasCosas\api\Resource\Components\Components.class
-co\com\InternetDeLasCosas\api\Controller\LoginController.class
 co\com\InternetDeLasCosas\api\Resource\Login\DatesVerifyLogin.class
 co\com\InternetDeLasCosas\api\Resource\Login\DatesRegisterUser.class
 co\com\InternetDeLasCosas\api\ApiApplication.class
-co\com\InternetDeLasCosas\api\Resource\Login\Login.class
 co\com\InternetDeLasCosas\api\Controller\ComponentsController.class
-co\com\InternetDeLasCosas\api\Resource\Components\DatesRegisterComponents.class
 co\com\InternetDeLasCosas\api\Resource\Components\ComponentsRepository.class
 co\com\InternetDeLasCosas\api\Resource\Login\LoginRepository.class
+co\com\InternetDeLasCosas\api\Controller\LoginController.class
+co\com\InternetDeLasCosas\api\Resource\Login\Login.class
+co\com\InternetDeLasCosas\api\Resource\Components\DatesRegisterComponents.class

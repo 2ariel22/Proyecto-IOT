@@ -1,22 +1,23 @@
 package co.com.InternetDeLasCosas.api.Resource.Login;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.*;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@Table(name = "login")
+@Entity(name = "Login")
 public class Login {
     @Id
-    private String components_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     private String name;
     private String user;
+
     private String password;
 
 

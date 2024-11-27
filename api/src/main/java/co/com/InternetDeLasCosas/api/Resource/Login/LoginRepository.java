@@ -1,11 +1,10 @@
 package co.com.InternetDeLasCosas.api.Resource.Login;
 
-import co.com.InternetDeLasCosas.api.Resource.Components.Components;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface LoginRepository extends MongoRepository<Login,String> {
+public interface LoginRepository extends JpaRepository<Login,Long> {
 
     Optional<Login> findByUserAndPassword(String user, String password);
 }
