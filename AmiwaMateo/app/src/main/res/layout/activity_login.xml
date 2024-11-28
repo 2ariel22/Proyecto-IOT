@@ -24,11 +24,30 @@
         android:layout_height="wrap_content"
         android:text="Iniciar Sesión"
         android:layout_marginTop="16dp" />
-    <!-- Agregar esto después del botón de login -->
+
     <Button
         android:id="@+id/btnGoToRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Registrarse"
         android:layout_marginTop="8dp"/>
+
+    <!-- Texto "Sobre Nosotros" -->
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="378dp"
+        android:layout_height="wrap_content"
+        android:text="Sobre Nosotros "
+        android:textAlignment="center" />
+
+    <TextView
+        android:id="@+id/tvAboutUs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="En este proyecto, buscamos facilitar la interacción entre los usuarios y sistemas inteligentes mediante comandos de voz. Nuestra solución se centra en el control eficiente de componentes como LEDs y motores, permitiendo un monitoreo en tiempo real y ofreciendo opciones de reporte detallado en formatos accesibles como PDF.  Nuestra misión es integrar tecnología moderna para simplificar tareas cotidianas, garantizando una experiencia intuitiva, confiable y personalizable para los usuarios."
+        android:textAlignment="center"
+        android:textSize="14sp" />
+
 </LinearLayout>

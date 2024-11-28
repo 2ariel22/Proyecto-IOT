@@ -9,17 +9,19 @@
 // Configuración de WiFi
 const char* ssid = "Pension63";
 const char* password = "LaPension2024.";
+//const char* ssid = "iPhone de ariel";
+//const char* password = "123456789";
 const String serverIP = "http://64.23.154.127:8080";
+//const String serverIP = "http://192.168.40.113:8080";
 const String endpointEstado = serverIP + "/login/isAuthenticated";
 const String endpointUsuario = serverIP + "/login/getLoggedUser";
 const String endpointGetState = serverIP + "/components/getState";
 const String endpointAddComponent = serverIP + "/components/addComponent";
 
 // Configuración del motor paso a paso
-const int stepsPerRevolution = 2048;  // Pasos por revolución para 28BYJ-48
-// Definir los pines del motor en secuencia correcta IN1-IN2-IN3-IN4
-Stepper motor(stepsPerRevolution, 16, 17, 18, 19);  // Orden corregido de pines
-const int motorSpeed = 10;  // Velocidad en RPM, ajustada para mejor rendimiento
+int stepsPerRevolution = 200; // Cambia según tu motor
+Stepper motor(stepsPerRevolution, 16, 17, 18, 19);
+int motorSpeed = 100;  // Velocidad en RPM, ajustada para mejor rendimiento
 
 // LCD y otros componentes permanecen igual
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -51,6 +53,9 @@ int currentStep = 0;
 
 String usuarioLogueado = "";
 bool usuarioAutenticado = false;
+char mode = 'A';
+int numText=0;
+int modeB =0;
 
 void setup() {
   Serial.begin(115200);
@@ -73,20 +78,18 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
-  lcd.print("Esperando Login...");
+  
 }
 
 void loop() {
-  if (millis() - lastCheckTime > checkInterval) {
+  
+  while(mode == 'A'){
+    if (millis() - lastCheckTime > checkInterval) {
+    obtenerEstadoDelServidor();
     verificarEstadoAutenticacion();
-    if (usuarioAutenticado) {
-      obtenerEstadoDelServidor();
-    }
     lastCheckTime = millis();
-    actualizarPantalla();
-  }
-
-  if (usuarioAutenticado) {
+    
+    }
     // Manejar entrada del teclado
     char key = keypad.getKey();
     if (key) {
@@ -97,16 +100,19 @@ void loop() {
         case '2':
           enviarNuevoEstado(stateLED, !stateMotor);
           break;
+        case 'B':
+          Serial.println("change mode to B");
+          mode = 'B';
+          break;
       }
     }
-
     // Control del LED
     digitalWrite(PIN_LED, stateLED ? HIGH : LOW);
 
     // Control mejorado del motor
     if (stateMotor) {
-      if (millis() - lastMotorStep >= stepDelay) {
-        motor.step(1);  // Dar un solo paso
+       if (millis() - lastMotorStep >= stepDelay) {
+        motor.step(stepsPerRevolution);  // Dar un solo paso
         lastMotorStep = millis();
         currentStep++;
         
@@ -116,10 +122,104 @@ void loop() {
           Serial.println(currentStep);
         }
       }
-    } else {
-      currentStep = 0;  // Reiniciar contador cuando el motor está apagado
-    }
+    } 
+    
   }
+   while(mode == 'B'){
+    if (millis() - lastCheckTime > checkInterval) {
+    textModeB();
+    lastCheckTime = millis();
+    
+    }
+    char key = keypad.getKey();
+    if (key) {
+      switch (key) {
+        case '0':
+          numText = 0;
+          modeB= 0;
+          break;
+        case '1':
+          numText = 1;
+          if(modeB == 1){
+            
+            motorSpeed= motorSpeed+5;
+             if (motorSpeed>100){
+              motorSpeed =100;
+            }
+            motor.setSpeed(motorSpeed);
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("speed +5");
+            lcd.setCursor(0, 1);
+            lcd.print("speed: ");
+            lcd.setCursor(8, 1);
+            lcd.print(motorSpeed);
+            delay(1000);
+          }
+          else{
+            
+            modeB =1;
+          }
+          
+          break;
+        case '2':
+          numText =2;
+          if(modeB == 1){
+            motorSpeed= motorSpeed -5;
+            if (motorSpeed<0){
+              motorSpeed =0;
+            }
+            motor.setSpeed(motorSpeed);
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("speed -5");
+            lcd.setCursor(0, 1);
+            lcd.print("speed: ");
+            lcd.setCursor(8, 1);
+            lcd.print(motorSpeed);
+            delay(1000);
+            numText =1;
+          }
+          else{
+            modeB =2;
+            stepsPerRevolution =(stepsPerRevolution *(-1));
+          }
+          
+          break;
+        case 'A':
+          Serial.println("change mode to A");
+          mode = 'A';
+          break;
+      }
+    }
+   }
+
+}
+
+void textModeB(){
+    lcd.clear();
+    if(numText ==0){
+      lcd.setCursor(0, 0);
+      lcd.print("1.change speed M");
+  
+      lcd.setCursor(0, 1);
+      lcd.print("2.change giro");
+    }
+    else if(numText == 1){
+      lcd.setCursor(0, 0);
+      lcd.print("1.speed +5");
+      lcd.setCursor(0, 1);
+      lcd.print("2.speed -5");
+    }
+    else if(numText == 2){
+      lcd.setCursor(0, 0);
+      lcd.print("Giro Cambiado");
+      delay(1500);
+      numText=0;
+    }
+  
+    delay(20);
+
 }
 
 // Nueva función para enviar estados al servidor
@@ -144,7 +244,7 @@ void enviarNuevoEstado(bool nuevoStateLED, bool nuevoStateMotor) {
       // Actualizar estados locales
       stateLED = nuevoStateLED;
       stateMotor = nuevoStateMotor;
-      actualizarPantalla();
+      
     } else {
       Serial.print("Error al actualizar estados: ");
       Serial.println(httpResponseCode);
@@ -174,36 +274,34 @@ void obtenerEstadoDelServidor() {
       Serial.println("Error obteniendo estados del servidor");
     }
     http.end();
+    actualizarPantalla();
   }
 }
 
 // Actualizar la pantalla
 void actualizarPantalla() {
-  lcd.clear();
-  if (usuarioAutenticado) {
+    lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Usuario: ");
-    lcd.setCursor(0, 1);
+    lcd.print("User: ");
+    lcd.setCursor(7, 0);
     lcd.print(usuarioLogueado);
+    delay(20);
+    Serial.println(usuarioLogueado);
     // Mostrar estados actuales
-    lcd.setCursor(0, 2);
-    lcd.print("LED: ");
+    lcd.setCursor(8, 1);
+    lcd.print("L: ");
+    lcd.setCursor(11, 1);
     lcd.print(stateLED ? "ON" : "OFF");
-    lcd.setCursor(0, 3);
-    lcd.print("Motor: ");
+    Serial.println(stateLED ? "ON" : "OFF");
+    lcd.setCursor(0, 1);
+    lcd.print("M: ");
+    lcd.setCursor(3, 1);
     lcd.print(stateMotor ? "ON" : "OFF");
-  } else {
-    mostrarMensajeSesionCerrada();
-  }
+    Serial.println(stateMotor ? "ON" : "OFF");
+    delay(20);
 }
 
-void mostrarMensajeSesionCerrada() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Sesion cerrada");
-  lcd.setCursor(0, 1);
-  lcd.print("Esperando Login");
-}
+
 
 // Verificar si el usuario está autenticado
 void verificarEstadoAutenticacion() {
