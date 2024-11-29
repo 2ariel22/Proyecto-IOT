@@ -42,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_CODE_SPEECH_INPUT = 100
     private var currentLedState = false
     private var currentMotorState = false
+    private var currentSpeed = 100
+    private var currentGiro = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,6 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun downloadReport() {
         val url = "http://64.23.154.127:8080/components/getAllComponents"
+        //val url = "http://172.16.123.59:8080/components/getAllComponents"
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val request = Request.Builder().url(url).get().build()
@@ -131,17 +134,22 @@ class MainActivity : AppCompatActivity() {
                     document.add(Paragraph("Reporte de Componentes").setFontSize(20f).setTextAlignment(TextAlignment.CENTER))
 
                     // Create table for component data
-                    val table = Table(4)
+                    val table = Table(6)
                     table.addHeaderCell("ID")
                     table.addHeaderCell("Estado LED")
                     table.addHeaderCell("Estado Motor")
+                    table.addHeaderCell("Speed")
+                    table.addHeaderCell("Giro Motor")
                     table.addHeaderCell("Fecha")
+
 
                     for (i in 0 until dataArray.length()) {
                         val component = dataArray.getJSONObject(i)
                         table.addCell(component.getString("id"))
                         table.addCell(if (component.getBoolean("state_led")) "Encendido" else "Apagado")
                         table.addCell(if (component.getBoolean("state_Motor")) "Encendido" else "Apagado")
+                        table.addCell(component.getString("speed"))
+                        table.addCell(if (component.getString("giro")=="1") "horario" else "antihorario" )
                         table.addCell(component.getString("fecha"))
                     }
 
@@ -161,7 +169,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentState(onComplete: (() -> Unit)? = null) {
-        val url = "http://64.23.154.127:8080/components/getState"
+        //val url = "http://64.23.154.127:8080/components/getState"
+        val url = "http://172.16.123.59:8080/components/getState"
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val request = Request.Builder().url(url).get().build()
@@ -172,6 +181,8 @@ class MainActivity : AppCompatActivity() {
                     val json = JSONObject(it)
                     currentLedState = json.getBoolean("state_led")
                     currentMotorState = json.getBoolean("state_Motor")
+                    currentSpeed = json.getInt("speed")
+                    currentGiro = json.getInt("giro")
                     runOnUiThread {
                         updateStatusIndicators()
                         onComplete?.invoke()
@@ -206,28 +217,53 @@ class MainActivity : AppCompatActivity() {
             tvResult.text = recognizedText
             when {
                 recognizedText.contains("encender led") -> {
-                    makeHttpRequest(true, currentMotorState)
+                    makeHttpRequest(true, currentMotorState, currentSpeed, currentGiro)
                 }
                 recognizedText.contains("apagar led") -> {
-                    makeHttpRequest(false, currentMotorState)
+                    makeHttpRequest(false, currentMotorState, currentSpeed, currentGiro)
                 }
                 recognizedText.contains("encender motor") -> {
-                    makeHttpRequest(currentLedState, true)
+                    makeHttpRequest(currentLedState, true, currentSpeed, currentGiro)
                 }
                 recognizedText.contains("apagar motor") -> {
-                    makeHttpRequest(currentLedState, false)
+                    makeHttpRequest(currentLedState, false, currentSpeed, currentGiro)
+                }
+                recognizedText.contains("aumentar velocidad") -> {
+                    currentSpeed += 5
+                    if(currentSpeed > 100){
+                        currentSpeed = 100
+                    }
+                    makeHttpRequest(currentLedState, currentMotorState, currentSpeed, currentGiro)
+                }
+                recognizedText.contains("bajar velocidad") -> {
+                    currentSpeed -= 5
+                    if(currentSpeed < 0){
+                        currentSpeed = 0
+                    }
+                    makeHttpRequest(currentLedState, currentMotorState, currentSpeed, currentGiro)
+                }
+                recognizedText.contains("cambiar giro") -> {
+                    if(currentGiro ==1){
+                        currentGiro = -1
+                    }else{
+                        currentGiro = 1
+                    }
+                    makeHttpRequest(currentLedState, currentMotorState, currentSpeed, currentGiro)
                 }
             }
         }
     }
 
-    private fun makeHttpRequest(ledState: Boolean, motorState: Boolean) {
+    private fun makeHttpRequest(ledState: Boolean, motorState: Boolean, speed: Int, giro: Int) {
         val url = "http://64.23.154.127:8080/components/addComponent"
+        //val url = "http://172.16.123.59:8080/components/addComponent"
         val JSON = "application/json; charset=utf-8".toMediaType()
         val payload = """
             {
                 "state_led": $ledState,
-                "state_motor": $motorState
+                "state_motor": $motorState,
+                "speed": $speed,
+                "giro": $giro
             }
         """.trimIndent()
         CoroutineScope(Dispatchers.IO).launch {
@@ -251,6 +287,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun logoutFromServer() {
         val url = "http://64.23.154.127:8080/login/logout"
+        //val url = "http://172.16.123.59:8080/login/logout"
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val request = Request.Builder().url(url).post("".toRequestBody()).build()

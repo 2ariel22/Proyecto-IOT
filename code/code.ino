@@ -6,13 +6,11 @@
 #include <ArduinoJson.h>
 #include <Keypad.h>
 
-// Configuración de WiFi
-const char* ssid = "Pension63";
-const char* password = "LaPension2024.";
-//const char* ssid = "iPhone de ariel";
-//const char* password = "123456789";
+
+const char* ssid = "iPhone de ariel";
+const char* password = "123456789";
 const String serverIP = "http://64.23.154.127:8080";
-//const String serverIP = "http://192.168.40.113:8080";
+//const String serverIP = "http://172.16.123.59:8080";
 const String endpointEstado = serverIP + "/login/isAuthenticated";
 const String endpointUsuario = serverIP + "/login/getLoggedUser";
 const String endpointGetState = serverIP + "/components/getState";
@@ -22,6 +20,7 @@ const String endpointAddComponent = serverIP + "/components/addComponent";
 int stepsPerRevolution = 200; // Cambia según tu motor
 Stepper motor(stepsPerRevolution, 16, 17, 18, 19);
 int motorSpeed = 100;  // Velocidad en RPM, ajustada para mejor rendimiento
+int giro =1;
 
 // LCD y otros componentes permanecen igual
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -95,10 +94,10 @@ void loop() {
     if (key) {
       switch (key) {
         case '1':
-          enviarNuevoEstado(!stateLED, stateMotor);
+          enviarNuevoEstado(!stateLED, stateMotor,motorSpeed,giro);
           break;
         case '2':
-          enviarNuevoEstado(stateLED, !stateMotor);
+          enviarNuevoEstado(stateLED, !stateMotor,motorSpeed,giro);
           break;
         case 'B':
           Serial.println("change mode to B");
@@ -108,8 +107,10 @@ void loop() {
     }
     // Control del LED
     digitalWrite(PIN_LED, stateLED ? HIGH : LOW);
-
-    // Control mejorado del motor
+    if(stepsPerRevolution<0){
+      stepsPerRevolution = stepsPerRevolution*(-1);
+    }
+    stepsPerRevolution =(stepsPerRevolution *(giro));
     if (stateMotor) {
        if (millis() - lastMotorStep >= stepDelay) {
         motor.step(stepsPerRevolution);  // Dar un solo paso
@@ -146,6 +147,7 @@ void loop() {
              if (motorSpeed>100){
               motorSpeed =100;
             }
+            enviarNuevoEstado(stateLED, stateMotor,motorSpeed,giro);
             motor.setSpeed(motorSpeed);
             lcd.clear();
             lcd.setCursor(0, 0);
@@ -169,6 +171,7 @@ void loop() {
             if (motorSpeed<0){
               motorSpeed =0;
             }
+            enviarNuevoEstado(stateLED, stateMotor,motorSpeed,giro);
             motor.setSpeed(motorSpeed);
             lcd.clear();
             lcd.setCursor(0, 0);
@@ -182,7 +185,14 @@ void loop() {
           }
           else{
             modeB =2;
-            stepsPerRevolution =(stepsPerRevolution *(-1));
+            if(giro==1){
+              giro = -1;
+             
+            }
+            else{
+              giro=1;
+            }
+            
           }
           
           break;
@@ -223,7 +233,7 @@ void textModeB(){
 }
 
 // Nueva función para enviar estados al servidor
-void enviarNuevoEstado(bool nuevoStateLED, bool nuevoStateMotor) {
+void enviarNuevoEstado(bool nuevoStateLED, bool nuevoStateMotor, int nuevoSpeed, int nuevoGiro) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     http.begin(endpointAddComponent);
@@ -233,6 +243,8 @@ void enviarNuevoEstado(bool nuevoStateLED, bool nuevoStateMotor) {
     StaticJsonDocument<200> doc;
     doc["state_led"] = nuevoStateLED;
     doc["state_motor"] = nuevoStateMotor;
+    doc["speed"]=nuevoSpeed;
+    doc["giro"]=nuevoGiro;
     
     String jsonString;
     serializeJson(doc, jsonString);
@@ -268,6 +280,8 @@ void obtenerEstadoDelServidor() {
       if (!error) {
         stateLED = doc["state_led"].as<bool>();
         stateMotor = doc["state_Motor"].as<bool>();
+        motorSpeed = doc["speed"].as<int>();
+        giro = doc["giro"].as<int>();
         Serial.println("Estados actualizados desde el servidor");
       }
     } else {

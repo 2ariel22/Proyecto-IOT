@@ -54,6 +54,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun login(username: String, password: String) {
         val url = "http://64.23.154.127:8080/login/authenticate"  // Asegúrate de usar la URL correcta de tu API
+        //val url = "http://172.16.123.59:8080/login/authenticate"
         val JSON = "application/json; charset=utf-8".toMediaType()
         val payload = "{\"user\":\"$username\",\"password\":\"$password\"}"
 

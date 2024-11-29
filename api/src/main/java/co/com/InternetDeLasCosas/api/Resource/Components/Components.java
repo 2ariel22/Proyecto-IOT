@@ -22,6 +22,8 @@ public class Components {
     private boolean state_led;
     private boolean state_Motor;
     private LocalDateTime fecha;
+    private int speed;
+    private int giro;
 
 
     // Constructor que toma un DatesRegisterComponents
@@ -29,6 +31,8 @@ public class Components {
         this.state_led = datesRegisterComponents.state_led();
         this.state_Motor = datesRegisterComponents.state_motor();
         this.fecha = LocalDateTime.now();
+        this.speed = datesRegisterComponents.speed();
+        this.giro = datesRegisterComponents.giro();
     }
 
 
