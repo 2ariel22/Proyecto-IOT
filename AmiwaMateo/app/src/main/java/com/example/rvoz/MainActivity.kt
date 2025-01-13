@@ -169,8 +169,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentState(onComplete: (() -> Unit)? = null) {
-        //val url = "http://64.23.154.127:8080/components/getState"
-        val url = "http://172.16.123.59:8080/components/getState"
+        val url = "http://64.23.154.127:8080/components/getState"
+        //val url = "http://172.16.123.59:8080/components/getState"
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val request = Request.Builder().url(url).get().build()
